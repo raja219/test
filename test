@@ -1,0 +1,49 @@
+Script JoinDomain {
+
+            GetScript  =
+
+            {
+
+                @{
+
+                    Result = ('True' -in ((Get-WmiObject win32_computersystem).Domain -eq "${domain}"))
+
+                }
+
+            }
+
+            SetScript  =
+
+            {
+
+                $domain = "${domain}"
+
+                $Path = "${DomainJoinPath}"
+
+                $bar = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String((Get-SSMParameter -Name tooling-project-secret -WithDecryption $true).Value))
+
+                $password = ConvertTo-SecureString ($bar.Trim()) -AsPlainText -Force
+
+                $cred = New-Object System.Management.Automation.PSCredential ("europe\svc.automation", $password)
+
+
+
+                Add-Computer -DomainName $domain -OUPath $Path  -Credential $cred -PassThru -Verbose -ErrorAction stop
+
+                restart-computer -Force
+
+            }
+
+            TestScript =
+
+            {
+
+                $Status = ('True' -in ((Get-WmiObject win32_computersystem).Domain -eq "${domain}"))
+
+                $Status -eq $True
+
+            }
+
+            dependson  = '[xComputer]Newname'
+
+        }
