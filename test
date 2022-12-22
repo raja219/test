@@ -41,6 +41,9 @@ Script JoinDomain {
                 $Status = ('True' -in ((Get-WmiObject win32_computersystem).Domain -eq "${domain}"))
 
                 $Status -eq $True
+             {
+             
+             }
 
             }
 
